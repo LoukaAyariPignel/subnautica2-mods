@@ -1,0 +1,10 @@
+{
+    "name": "InfiniteHealth",
+    "version": "1.0.0",
+    "description": "Restaure la santé du joueur à 100% toutes les 500ms via SN2CheatManager::MyHealth.",
+    "authors": ["YourName"],
+    "type": "cpp",
+    "ue4ss_min_version": "3.0.0",
+    "game": "Subnautica2",
+    "dependencies": []
+}
