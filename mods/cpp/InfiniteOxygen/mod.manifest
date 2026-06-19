@@ -1,0 +1,10 @@
+{
+    "name": "InfiniteOxygen",
+    "version": "1.0.0",
+    "description": "Oxygène infini pour le joueur — supprime le drain d'O2.",
+    "authors": ["YourName"],
+    "type": "cpp",
+    "ue4ss_min_version": "3.0.0",
+    "game": "Subnautica2",
+    "dependencies": []
+}
