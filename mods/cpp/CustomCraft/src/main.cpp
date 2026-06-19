@@ -13,15 +13,25 @@ class CustomCraft : public CppUserModBase {
     bool m_initialized = false;
 
     // ── Définis tes recettes ici ─────────────────────────────────────────────
+    //
+    // Pour trouver les noms d'items valides :
+    //   1. Ouvre FModel avec vendor/SN2SDK/../Automation/Subnautica2-115506.usmap
+    //   2. Cherche les assets de classe UWEItemType (DA_*_ItemType)
+    //   3. Ou parcours Automation/DataIndex.json du repo :
+    //      https://github.com/Subnautica2Modding/Subnautica2-Project
+    //
+    // Items confirmés (build 115506, UE 5.6) :
+    //   "Titanium"   → DA_Titanium_ItemType   (/Game/Data/ItemType/Resource/)
+    //
     void registerRecipes()
     {
-        // Exemple : 2 Titanium → 1 Knife, 3 secondes de craft
-        RecipeBuilder("TitaniumKnife")
-            .name("Titanium Knife")
-            .description("A blade crafted from salvaged titanium.")
-            .ingredient("Titanium", 2)
-            .output("Knife", 1)
-            .craftingTime(3.0f)
+        // Exemple confirmé : DA_Titanium_ItemType existe dans le build 115506
+        RecipeBuilder("TitaniumIngot")
+            .name("Titanium Ingot")
+            .description("Refined titanium ingot.")
+            .ingredient("Titanium", 3)
+            .output("Titanium", 2)     // à remplacer par le vrai nom de l'output
+            .craftingTime(2.0f)
             .build();
 
         // Ajoute d'autres recettes en dessous, même syntaxe :
