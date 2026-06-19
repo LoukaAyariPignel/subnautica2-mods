@@ -34,3 +34,4 @@ target_compile_definitions(mod_common_options INTERFACE
 
 # Register all C++ mods here (add_subdirectory per mod)
 add_subdirectory(mods/cpp/InfiniteHealth)
+add_subdirectory(mods/cpp/CustomCraft)

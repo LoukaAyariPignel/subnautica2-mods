@@ -1,0 +1,10 @@
+{
+    "name": "CustomCraft",
+    "version": "1.0.0",
+    "description": "Ajoute des recettes de craft custom codées en C++.",
+    "authors": ["YourName"],
+    "type": "cpp",
+    "ue4ss_min_version": "3.0.0",
+    "game": "Subnautica2",
+    "dependencies": []
+}
