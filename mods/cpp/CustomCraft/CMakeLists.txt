@@ -1,13 +1,15 @@
 project(CustomCraft VERSION 1.0.0)
 
-# Dumper-7 SDK — généré depuis Subnautica2 avec Dumper-7.
-# Placer le SDK dans vendor/SN2SDK/ (voir README.md#prérequis).
+# SDK Dumper-7 pour Subnautica 2.
+# Source : https://github.com/Evasion3356/Subnautica-2-Cheat
+# Cloner ce repo dans vendor/SN2SDK/ :
+#   git submodule add https://github.com/Evasion3356/Subnautica-2-Cheat vendor/SN2SDK
 set(SN2_SDK_DIR "${CMAKE_SOURCE_DIR}/vendor/SN2SDK" CACHE PATH "Dumper-7 SDK path")
 
-if(NOT EXISTS "${SN2_SDK_DIR}/SDK/Subnautica2_classes.hpp")
+if(NOT EXISTS "${SN2_SDK_DIR}/SDK.hpp")
     message(FATAL_ERROR
-        "[CustomCraft] SDK Dumper-7 introuvable dans ${SN2_SDK_DIR}.\n"
-        "Lance Dumper-7 sur Subnautica2 pour générer le SDK.")
+        "[CustomCraft] SDK introuvable dans ${SN2_SDK_DIR}.\n"
+        "Lance : git submodule add https://github.com/Evasion3356/Subnautica-2-Cheat vendor/SN2SDK")
 endif()
 
 add_library(${PROJECT_NAME} SHARED
@@ -17,8 +19,8 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     src/
-    "${SN2_SDK_DIR}"
-    "${SN2_SDK_DIR}/SDK"
+    "${SN2_SDK_DIR}"          # SDK.hpp (include-all header)
+    "${SN2_SDK_DIR}/SDK"      # fichiers _classes.hpp, _structs.hpp individuels
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

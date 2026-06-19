@@ -1,7 +1,7 @@
 #include "CraftHook.hpp"
 
 #include <DynamicOutput/DynamicOutput.hpp>
-#include "SDK/Subnautica2_classes.hpp"
+#include "SDK/UWECrafting_classes.hpp"
 
 using namespace RC;
 using namespace RC::Unreal;
@@ -9,14 +9,12 @@ using namespace SDK;
 
 // ─── Statics ────────────────────────────────────────────────────────────────
 
-std::vector<UUWECraftingRecipe*>      CraftHook::recipes;
-CraftHook::GetRecipesFn               CraftHook::s_original = nullptr;
-std::unique_ptr<PLH::x64Detour>       CraftHook::s_hook;
+std::vector<UUWECraftingRecipe*>   CraftHook::recipes;
+CraftHook::GetRecipesFn            CraftHook::s_original = nullptr;
+std::unique_ptr<PLH::x64Detour>    CraftHook::s_hook;
 
-// ─── Hook implementation ─────────────────────────────────────────────────────
+// ─── Hook ────────────────────────────────────────────────────────────────────
 
-// Called instead of the original GetAllCraftingRecipes.
-// We get the real list, resize it, then append our custom recipes.
 TArray<UUWECraftingRecipe*> CraftHook::hooked()
 {
     auto entries = s_original();
@@ -26,9 +24,10 @@ TArray<UUWECraftingRecipe*> CraftHook::hooked()
     return entries;
 }
 
-// Walks the bytes at `addr` counting CALL (0xE8) instructions.
-// When the Nth one is found, resolves and returns its target address.
-// SN2CustomCraft confirmed ordinal=1 for GetAllCraftingRecipes.
+// Parcourt les opcodes à partir de `addr` et retourne la cible du Nième
+// CALL relatif (opcode 0xE8). Utilisé pour passer le wrapper UFunction
+// exec et atteindre l'implémentation C++ native.
+// Ordinal 1 confirmé pour GetAllCraftingRecipes par SN2CustomCraft.
 uintptr_t CraftHook::scanCall(uintptr_t addr, int ordinal)
 {
     while (true) {
@@ -42,30 +41,37 @@ uintptr_t CraftHook::scanCall(uintptr_t addr, int ordinal)
     }
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// ─── install() ───────────────────────────────────────────────────────────────
 
 void CraftHook::install()
 {
-    // Locate the UFunction through the asset registry class
-    const auto* uclass = USN2AssetRegistry::StaticClass();
+    // Trouver une instance de SN2AssetRegistry pour accéder à sa UClass
+    auto* reg = UObjectGlobals::FindFirstOf(STR("SN2AssetRegistry"));
+    if (!reg) {
+        Output::send<LogLevel::Error>(STR("[CustomCraft] SN2AssetRegistry instance not found\n"));
+        return;
+    }
+
+    const auto* uclass = reg->GetClassPrivate();
     if (!uclass) {
-        Output::send<LogLevel::Error>(STR("[CustomCraft] USN2AssetRegistry class not found\n"));
+        Output::send<LogLevel::Error>(STR("[CustomCraft] SN2AssetRegistry UClass is null\n"));
         return;
     }
 
-    const auto* fn = uclass->GetFunction(STR("SN2AssetRegistry"), STR("GetAllCraftingRecipes"));
+    // Trouver la UFunction GetAllCraftingRecipes
+    const auto* fn = uclass->GetFunctionByNameInChain(STR("GetAllCraftingRecipes"));
     if (!fn || !fn->ExecFunction) {
-        Output::send<LogLevel::Error>(STR("[CustomCraft] GetAllCraftingRecipes UFunction not found\n"));
+        Output::send<LogLevel::Error>(
+            STR("[CustomCraft] GetAllCraftingRecipes UFunction not found\n"));
         return;
     }
 
-    // ExecFunction is the UFunction wrapper; the real C++ implementation
-    // is the 1st CALL inside it (confirmed by SN2CustomCraft analysis).
+    // Passer le wrapper exec pour atteindre la vraie implémentation
     const auto wrapperPtr  = reinterpret_cast<uintptr_t>(*fn->ExecFunction);
     const auto internalPtr = scanCall(wrapperPtr, 1);
 
     Output::send<LogLevel::Verbose>(
-        STR("[CustomCraft] Hooking GetAllCraftingRecipes at 0x{:X}\n"), internalPtr);
+        STR("[CustomCraft] GetAllCraftingRecipes internal @ 0x{:X}\n"), internalPtr);
 
     s_hook = std::make_unique<PLH::x64Detour>(
         internalPtr,
@@ -73,13 +79,12 @@ void CraftHook::install()
         reinterpret_cast<uint64_t*>(&s_original));
 
     if (s_hook->hook())
-        Output::send<LogLevel::Verbose>(STR("[CustomCraft] Hook installed\n"));
+        Output::send<LogLevel::Verbose>(STR("[CustomCraft] Hook OK\n"));
     else
         Output::send<LogLevel::Error>(STR("[CustomCraft] Hook FAILED\n"));
 }
 
 void CraftHook::uninstall()
 {
-    if (s_hook)
-        s_hook->unHook();
+    if (s_hook) s_hook->unHook();
 }
