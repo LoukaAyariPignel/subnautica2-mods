@@ -32,6 +32,4 @@ target_compile_definitions(mod_common_options INTERFACE
     _UNICODE
 )
 
-# Register all C++ mods
-add_subdirectory(mods/cpp/ExampleMod)
-add_subdirectory(mods/cpp/InfiniteOxygen)
+# Register all C++ mods here (add_subdirectory per mod)

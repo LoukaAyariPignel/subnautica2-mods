@@ -29,6 +29,9 @@ Makefile
 vendor/UE4SS/lib/
 vendor/UE4SS/bin/
 
+# Claude Code
+.claude/
+
 # OS
 Thumbs.db
 .DS_Store
